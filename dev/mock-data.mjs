@@ -23,6 +23,7 @@ function localtime(tz) {
 }
 
 export function mock(q) {
+  q = q.split(',')[0].trim();
   const row = presets[aliases[q] || q];
   if (!row) return null;
   const [name, region, country, tz, t, f, text, icon, hum, wind, uv, isDay] = row;

@@ -397,6 +397,13 @@
 <script>
 (() => {
   const CITIES = ['Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad', 'New York', 'London'];
+  // Unambiguous queries for the chips (plain "Delhi" resolves to Delhi, Ontario).
+  const CHIP_QUERY = {
+    mumbai: 'Mumbai, Maharashtra, India', delhi: 'New Delhi, India', bengaluru: 'Bengaluru, Karnataka, India',
+    hyderabad: 'Hyderabad, Telangana, India', chennai: 'Chennai, Tamil Nadu, India', kolkata: 'Kolkata, West Bengal, India',
+    pune: 'Pune, Maharashtra, India', ahmedabad: 'Ahmedabad, Gujarat, India', 'new york': 'New York, New York, United States',
+    london: 'London, United Kingdom',
+  };
   const DEFAULT_CITY = 'Mumbai';
   const CLIENT_TIMEOUT_MS = 10000;
 
@@ -505,7 +512,8 @@
     track('search', { q });
 
     try {
-      const res = await fetch(`/api/weather?q=${encodeURIComponent(q.toLowerCase())}`, { signal: ctrl.signal });
+      const apiQ = CHIP_QUERY[q.toLowerCase()] || q;
+      const res = await fetch(`/api/weather?q=${encodeURIComponent(apiQ.toLowerCase())}`, { signal: ctrl.signal });
       const body = await res.json().catch(() => null);
       if (ctrl !== inflight) return; // superseded
 
