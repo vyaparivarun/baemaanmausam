@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SKYCRED · Check the sky's credit score</title>
+<meta name="description" content="Is it okay to step out right now? Live weather with a verdict, in under 5 seconds." />
+<meta name="theme-color" content="#0a0a0f" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill='%23e9b949' d='M46 50H20a12 12 0 1 1 2.6-23.7A15 15 0 0 1 51 30.4 10 10 0 0 1 46 50z'/></svg>" />
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: rgba(255,255,255,0.045);
+    --surface-2: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --text: #f4f4f6;
+    --muted: #a3a3b2;
+    --gold: #e9b949;
+    --gold-2: #f6d27a;
+    --violet: #b197fc;
+    --red: #ff7b7b;
+    --radius: 18px;
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(900px 500px at 110% -10%, rgba(233,185,73,0.16), transparent 60%),
+      radial-gradient(800px 600px at -20% 10%, rgba(124,92,255,0.20), transparent 60%),
+      radial-gradient(700px 500px at 50% 120%, rgba(124,92,255,0.10), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 28px 18px 40px; }
+
+  /* Header */
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 9px; font-weight: 800; letter-spacing: 0.06em; font-size: 20px; }
+  .logo svg { width: 30px; height: 30px; }
+  .logo .cred { color: var(--gold); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    padding: 6px 11px; border-radius: 999px;
+    border: 1px solid rgba(233,185,73,0.35); color: var(--gold-2);
+    background: rgba(233,185,73,0.08);
+  }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 0 rgba(74,222,128,0.6); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
+  h1 { font-size: clamp(26px, 7vw, 36px); line-height: 1.12; letter-spacing: -0.02em; margin: 26px 0 22px; font-weight: 800; }
+  h1 .accent { background: linear-gradient(90deg, var(--violet), #d0bfff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* Search */
+  .search { display: flex; gap: 10px; }
+  .search input {
+    flex: 1; min-width: 0; height: 50px; padding: 0 16px;
+    border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font: inherit; font-size: 16px; outline: none;
+    transition: border-color .15s, background .15s;
+  }
+  .search input::placeholder { color: #8a8a99; }
+  .search input:focus-visible { border-color: rgba(177,151,252,0.7); background: var(--surface-2); }
+  .btn-gold {
+    height: 50px; padding: 0 20px; border: 0; border-radius: 14px; cursor: pointer;
+    font: inherit; font-weight: 750; font-size: 15px; color: #1a1406;
+    background: linear-gradient(180deg, var(--gold-2), var(--gold));
+    box-shadow: 0 6px 20px -6px rgba(233,185,73,0.55);
+    transition: transform .08s, filter .15s, opacity .15s;
+  }
+  .btn-gold:hover { filter: brightness(1.05); }
+  .btn-gold:active { transform: translateY(1px); }
+  .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+  :focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+  /* Chips */
+  .label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--muted); margin: 22px 0 10px; text-transform: uppercase; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface); color: #d9d9e2;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .chip:hover { background: var(--surface-2); }
+  .chip[aria-pressed="true"] { background: rgba(233,185,73,0.14); border-color: rgba(233,185,73,0.6); color: var(--gold-2); }
+
+  /* Status */
+  .status { min-height: 24px; margin: 16px 0 4px; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .status.error { color: var(--red); }
+  .status .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--gold); animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-ghost { font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.11); }
+
+  /* Card */
+  .card {
+    margin-top: 10px; padding: 22px; border-radius: var(--radius);
+    background: linear-gradient(160deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.7);
+    animation: rise .35s ease-out;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .loc h2 { margin: 0; font-size: 24px; letter-spacing: -0.01em; }
+  .loc .region { color: var(--muted); margin-top: 3px; font-size: 15px; }
+  .loc .time { color: #8a8a99; margin-top: 6px; font-size: 13px; font-family: var(--mono); }
+  .now { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 16px; }
+  .temp { font-size: 68px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+  .temp sup { font-size: 26px; font-weight: 700; vertical-align: top; position: relative; top: 8px; margin-left: 2px; color: var(--muted); }
+  .cond { font-size: 17px; font-weight: 600; margin-top: 8px; }
+  .feels { color: var(--muted); font-size: 14px; margin-top: 3px; }
+  .now img { width: 84px; height: 84px; flex: none; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.4)); }
+
+  .mood {
+    display: flex; gap: 14px; align-items: center;
+    padding: 14px 16px; border-radius: 14px;
+    background: linear-gradient(90deg, rgba(124,92,255,0.18), rgba(233,185,73,0.10));
+    border: 1px solid rgba(177,151,252,0.25);
+  }
+  .mood .emoji { font-size: 32px; line-height: 1; }
+  .mood .title { font-weight: 800; font-size: 16px; }
+  .mood .advice { color: #d6d6e0; font-size: 14px; margin-top: 2px; line-height: 1.4; }
+
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .tile { padding: 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
+  .tile .k { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; }
+  .tile .v { font-size: 20px; font-weight: 800; margin-top: 4px; }
+  .tile .v small { font-size: 13px; color: var(--muted); font-weight: 600; margin-left: 2px; }
+
+  /* JSON viewer */
+  .json { margin-top: 18px; border-radius: var(--radius); border: 1px solid var(--border); background: rgba(0,0,0,0.35); overflow: hidden; }
+  .json-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; border-bottom: 1px solid var(--border); }
+  .tabs { display: flex; gap: 4px; }
+  .tab { font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; padding: 7px 12px; border-radius: 10px; border: 0; background: transparent; color: var(--muted); }
+  .tab[aria-selected="true"] { background: var(--surface-2); color: var(--text); }
+  pre { margin: 0; padding: 14px 16px; max-height: 320px; overflow: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: #cfd3dc; white-space: pre; }
+  pre.raw { white-space: pre-wrap; word-break: break-all; }
+  .j-key { color: #b197fc; } .j-str { color: #9fe0a8; } .j-num { color: #f6d27a; } .j-bool { color: #7cc4ff; }
+
+  footer { margin-top: 30px; text-align: center; color: #8a8a99; font-size: 13px; }
+  footer a { color: var(--gold-2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  [hidden] { display: none !important; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+  @media (max-width: 400px) {
+    .wrap { padding: 20px 14px 32px; }
+    .btn-gold { padding: 0 16px; }
+    .temp { font-size: 58px; }
+    .now img { width: 70px; height: 70px; }
+    .tile .v { font-size: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <div class="logo" aria-label="SKYCRED">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6d27a"/><stop offset="1" stop-color="#e9b949"/></linearGradient></defs>
+          <path fill="url(#g)" d="M46 50H20a12 12 0 1 1 2.6-23.7A15 15 0 0 1 51 30.4 10 10 0 0 1 46 50z"/>
+        </svg>
+        <span>SKY<span class="cred">CRED</span></span>
+      </div>
+      <span class="pill"><span class="dot" aria-hidden="true"></span>LIVE WEATHER</span>
+    </div>
+    <h1>Check the sky's <span class="accent">credit score</span> before you step out.</h1>
+  </header>
+
+  <main>
+    <form class="search" id="searchForm" role="search" autocomplete="off">
+      <label for="city" class="sr-only">City name</label>
+      <input id="city" name="city" type="text" placeholder="Enter a city name…" maxlength="100" enterkeyhint="search" />
+      <button class="btn-gold" id="searchBtn" type="submit">Search</button>
+    </form>
+
+    <div class="label" id="chipsLabel">Popular cities</div>
+    <div class="chips" id="chips" role="group" aria-labelledby="chipsLabel"></div>
+
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+
+    <section id="result" hidden aria-live="polite">
+      <article class="card" id="card">
+        <div class="loc">
+          <h2 id="cityName"></h2>
+          <div class="region" id="region"></div>
+          <div class="time" id="localTime"></div>
+        </div>
+        <div class="now">
+          <div>
+            <div class="temp"><span id="temp"></span><sup>°C</sup></div>
+            <div class="cond" id="condition"></div>
+            <div class="feels" id="feels"></div>
+          </div>
+          <img id="icon" alt="" width="84" height="84" onerror="this.hidden=true" />
+        </div>
+        <div class="mood" id="mood">
+          <div class="emoji" id="moodEmoji" aria-hidden="true"></div>
+          <div>
+            <div class="title" id="moodTitle"></div>
+            <div class="advice" id="moodAdvice"></div>
+          </div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><div class="k">Humidity</div><div class="v"><span id="humidity"></span><small>%</small></div></div>
+          <div class="tile"><div class="k">Wind</div><div class="v"><span id="wind"></span><small>kph</small></div></div>
+          <div class="tile"><div class="k">UV index</div><div class="v" id="uv"></div></div>
+        </div>
+      </article>
+
+      <div class="json" id="json">
+        <div class="json-bar">
+          <div class="tabs" role="tablist" aria-label="JSON view">
+            <button class="tab" role="tab" id="tabFmt" aria-selected="true" aria-controls="jsonOut">Formatted JSON</button>
+            <button class="tab" role="tab" id="tabRaw" aria-selected="false" aria-controls="jsonOut" tabindex="-1">Raw JSON</button>
+          </div>
+          <button class="btn-ghost" id="copyBtn" type="button">Copy</button>
+        </div>
+        <pre id="jsonOut" role="tabpanel" tabindex="0" aria-labelledby="tabFmt"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Powered by <a href="https://www.weatherapi.com/" title="Free Weather API" target="_blank" rel="noopener">WeatherAPI.com</a> · Not a real credit score, just vibes.
+  </footer>
+</div>
+
+<!-- Vercel Web Analytics (enable it in the Vercel dashboard; harmless 404 elsewhere) -->
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
+
+<script>
+(() => {
+  const CITIES = ['Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 'Ahmedabad', 'New York', 'London'];
+  const DEFAULT_CITY = 'Mumbai';
+  const CLIENT_TIMEOUT_MS = 10000;
+
+  const $ = (id) => document.getElementById(id);
+  const form = $('searchForm'), input = $('city'), btn = $('searchBtn');
+  const chipsEl = $('chips'), statusEl = $('status'), result = $('result');
+  const jsonOut = $('jsonOut'), tabFmt = $('tabFmt'), tabRaw = $('tabRaw'), copyBtn = $('copyBtn');
+
+  let lastData = null;
+  let jsonMode = 'formatted';
+  let inflight = null;
+  let lastQuery = DEFAULT_CITY;
+
+  const track = (name, data) => { try { window.va('event', { name, data }); } catch (_) {} };
+
+  // ---------- Chips ----------
+  CITIES.forEach((c) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = c;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => {
+      input.value = c;
+      track('chip_tap', { city: c });
+      search(c);
+    });
+    chipsEl.appendChild(b);
+  });
+
+  function highlightChip(q) {
+    const k = q.trim().toLowerCase();
+    chipsEl.querySelectorAll('.chip').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === k));
+    });
+  }
+
+  // ---------- Mood logic (condition first, then feels-like) ----------
+  function getMood(cur) {
+    const text = (cur.condition?.text || '').toLowerCase();
+    const has = (...words) => words.some((w) => text.includes(w));
+    const feels = Math.round(cur.feelslike_c);
+    let m;
+    if (has('thunder'))                         m = { emoji: '⛈️', title: 'Storm Alert',  advice: 'Stay in if you can; skip the open spaces.' };
+    else if (has('rain', 'drizzle', 'shower'))  m = { emoji: '☔', title: 'Umbrella Day', advice: 'Carry an umbrella and waterproof shoes.' };
+    else if (has('snow', 'sleet', 'ice'))       m = { emoji: '❄️', title: 'Snow Day',     advice: 'Boots, gloves, and watch your step.' };
+    else if (has('haze', 'smoke', 'mist', 'fog')) m = { emoji: '🌫️', title: 'Hazy Skies', advice: 'Low visibility; consider a mask outdoors.' };
+    else if (feels >= 38)                       m = { emoji: '🔥', title: 'Heat Wave',     advice: 'Avoid midday sun, carry water.' };
+    else if (feels >= 28)                       m = { emoji: '😎', title: 'Warm & Sunny',  advice: 'Pleasant warmth, light layers work.' };
+    else if (feels >= 18)                       m = { emoji: '💯', title: 'Perfect Score', advice: 'Ideal weather; go enjoy it.' };
+    else if (feels >= 8)                        m = { emoji: '🧥', title: 'Light Jacket',  advice: 'Cool out there; grab a layer.' };
+    else                                        m = { emoji: '🥶', title: 'Freeze Frame',  advice: 'Bone-chilling cold — bundle up tight.' };
+    if (cur.uv >= 6 && cur.is_day === 1) m = { ...m, advice: `${m.advice} High UV, wear sunscreen.` };
+    return m;
+  }
+
+  // ---------- Status ----------
+  function setStatus(kind, text) {
+    statusEl.className = 'status' + (kind === 'error' || kind === 'neterror' ? ' error' : '');
+    statusEl.replaceChildren();
+    if (kind === 'loading') {
+      const s = document.createElement('span'); s.className = 'spinner'; s.setAttribute('aria-hidden', 'true');
+      statusEl.append(s);
+    }
+    if (text) statusEl.append(document.createTextNode(text));
+    if (kind === 'neterror') {
+      const r = document.createElement('button');
+      r.type = 'button'; r.className = 'btn-ghost'; r.textContent = 'Retry';
+      r.addEventListener('click', () => search(lastQuery));
+      statusEl.append(r);
+    }
+  }
+
+  // ---------- Fetch ----------
+  async function search(raw) {
+    const q = String(raw || '').trim();
+    if (!q) { input.focus(); return; }
+    lastQuery = q;
+    highlightChip(q);
+
+    if (inflight) inflight.abort();
+    const ctrl = new AbortController();
+    inflight = ctrl;
+    const timer = setTimeout(() => ctrl.abort('timeout'), CLIENT_TIMEOUT_MS);
+
+    btn.disabled = true;
+    setStatus('loading', 'Fetching weather…');
+    track('search', { q });
+
+    try {
+      const res = await fetch(`/api/weather?q=${encodeURIComponent(q.toLowerCase())}`, { signal: ctrl.signal });
+      const body = await res.json().catch(() => null);
+      if (ctrl !== inflight) return; // superseded
+
+      if (res.status === 404 || body?.error?.code === 1006) {
+        result.hidden = true;
+        lastData = null;
+        setStatus('error', 'No matching location found.');
+        track('not_found', { q });
+        return;
+      }
+      if (!res.ok || !body?.current) throw new Error(`HTTP ${res.status}`);
+
+      render(body);
+      setStatus('', '');
+    } catch (err) {
+      if (ctrl !== inflight) return; // aborted by a newer request
+      result.hidden = true;
+      setStatus('neterror', "Couldn't reach the weather service. Try again.");
+      track('error', { q, message: String(err?.message || err) });
+    } finally {
+      clearTimeout(timer);
+      if (ctrl === inflight) { inflight = null; btn.disabled = false; }
+    }
+  }
+
+  // ---------- Render ----------
+  function render(d) {
+    const { location: loc, current: cur } = d;
+    lastData = d;
+    $('cityName').textContent = loc.name;
+    $('region').textContent = [loc.region, loc.country].filter(Boolean).join(', ');
+    $('localTime').textContent = `Local time: ${loc.localtime}`;
+    $('temp').textContent = Math.round(cur.temp_c);
+    $('condition').textContent = cur.condition?.text || '';
+    $('feels').textContent = `Feels like ${Math.round(cur.feelslike_c)}°C`;
+
+    const icon = $('icon');
+    const src = cur.condition?.icon || '';
+    if (src) {
+      icon.src = (src.startsWith('//') ? 'https:' : '') + src.replace('/64x64/', '/128x128/');
+      icon.alt = cur.condition.text || '';
+      icon.hidden = false;
+    } else icon.hidden = true;
+
+    const m = getMood(cur);
+    $('moodEmoji').textContent = m.emoji;
+    $('moodTitle').textContent = m.title;
+    $('moodAdvice').textContent = m.advice;
+
+    $('humidity').textContent = cur.humidity;
+    $('wind').textContent = Number(cur.wind_kph).toFixed(1);
+    $('uv').textContent = cur.uv;
+
+    renderJson();
+    result.hidden = false;
+  }
+
+  function escapeHtml(s) { return s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+  function highlightJson(str) {
+    return escapeHtml(str).replace(
+      /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+      (m) => {
+        let cls = 'j-num';
+        if (m.startsWith('"')) cls = m.trimEnd().endsWith(':') ? 'j-key' : 'j-str';
+        else if (/true|false|null/.test(m)) cls = 'j-bool';
+        return `<span class="${cls}">${m}</span>`;
+      }
+    );
+  }
+  function currentJsonText() {
+    if (!lastData) return '';
+    return jsonMode === 'formatted' ? JSON.stringify(lastData, null, 2) : JSON.stringify(lastData);
+  }
+  function renderJson() {
+    const txt = currentJsonText();
+    if (jsonMode === 'formatted') { jsonOut.className = ''; jsonOut.innerHTML = highlightJson(txt); }
+    else { jsonOut.className = 'raw'; jsonOut.textContent = txt; }
+  }
+
+  function selectTab(mode) {
+    jsonMode = mode;
+    const fmt = mode === 'formatted';
+    tabFmt.setAttribute('aria-selected', String(fmt));
+    tabRaw.setAttribute('aria-selected', String(!fmt));
+    tabFmt.tabIndex = fmt ? 0 : -1;
+    tabRaw.tabIndex = fmt ? -1 : 0;
+    jsonOut.setAttribute('aria-labelledby', fmt ? 'tabFmt' : 'tabRaw');
+    renderJson();
+  }
+  tabFmt.addEventListener('click', () => selectTab('formatted'));
+  tabRaw.addEventListener('click', () => selectTab('raw'));
+  [tabFmt, tabRaw].forEach((t) => t.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const next = jsonMode === 'formatted' ? tabRaw : tabFmt;
+      next.click(); next.focus(); e.preventDefault();
+    }
+  }));
+
+  let copyTimer;
+  copyBtn.addEventListener('click', async () => {
+    const txt = currentJsonText();
+    if (!txt) return;
+    try {
+      await navigator.clipboard.writeText(txt);
+    } catch (_) {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      ta.remove();
+    }
+    copyBtn.textContent = 'Copied';
+    track('copy_json', { mode: jsonMode });
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
+  });
+
+  form.addEventListener('submit', (e) => { e.preventDefault(); search(input.value); });
+
+  // ---------- Default load ----------
+  input.value = DEFAULT_CITY;
+  search(DEFAULT_CITY);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "skycred",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Check the sky's credit score before you step out.",
+  "type": "module",
+  "scripts": {
+    "dev": "node dev/server.mjs",
+    "dev:mock": "MOCK=1 node dev/server.mjs"
+  },
+  "engines": { "node": ">=18" }
+}
