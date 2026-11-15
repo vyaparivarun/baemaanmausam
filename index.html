@@ -1,228 +1,381 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-mood="default">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SKYCRED · Check the sky's credit score</title>
 <meta name="description" content="Is it okay to step out right now? Live weather with a verdict, in under 5 seconds." />
-<meta name="theme-color" content="#0a0a0f" />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill='%23e9b949' d='M46 50H20a12 12 0 1 1 2.6-23.7A15 15 0 0 1 51 30.4 10 10 0 0 1 46 50z'/></svg>" />
+<meta name="theme-color" content="#eaddff" id="themeColor" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='%236750a4'/><path fill='%23fff' d='M44 44H22a9 9 0 1 1 2-17.8A11 11 0 0 1 45 29a7.5 7.5 0 0 1-1 15z'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=air,arrow_forward,check,cloud,content_copy,data_object,error,location_on,refresh,schedule,search,thermostat,water_drop,wb_sunny&display=block" />
 <style>
+  /* ============ Material 3 Expressive tokens ============ */
   :root {
-    --bg: #0a0a0f;
-    --surface: rgba(255,255,255,0.045);
-    --surface-2: rgba(255,255,255,0.07);
-    --border: rgba(255,255,255,0.09);
-    --text: #f4f4f6;
-    --muted: #a3a3b2;
-    --gold: #e9b949;
-    --gold-2: #f6d27a;
-    --violet: #b197fc;
-    --red: #ff7b7b;
-    --radius: 18px;
-    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --primary: #6750a4; --on-primary: #fff;
+    --pc: #eaddff;      --on-pc: #21005d;
+    --tc: #ffd8e4;      --on-tc: #31111d;
+    --on-surface: #1d1b20; --on-surface-var: #49454f; --outline: #79747e; --outline-var: #cac4d0;
+    --error: #b3261e; --error-c: #f9dedc; --on-error-c: #410e0b;
+    --inverse: #322f35; --on-inverse: #f5eff7;
+
+    --surface:   color-mix(in oklab, var(--pc) 22%, #fffbff);
+    --surface-1: color-mix(in oklab, var(--pc) 38%, #fffbff);
+    --surface-2: color-mix(in oklab, var(--pc) 55%, #fffbff);
+
+    --font: "Roboto Flex", Roboto, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --mono: ui-monospace, "Roboto Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+    --ease: cubic-bezier(.2, 0, 0, 1);
   }
+  /* Dynamic colour: the whole theme follows the weather mood */
+  [data-mood="hazy"]    { --primary:#5d5d8f; --pc:#e2e0ff; --on-pc:#191a49; --tc:#f6d9ec; --on-tc:#2b1527; }
+  [data-mood="sunny"]   { --primary:#a04100; --pc:#ffdbcb; --on-pc:#351000; --tc:#ffe08a; --on-tc:#241a00; }
+  [data-mood="heat"]    { --primary:#b3261e; --pc:#ffdad6; --on-pc:#410002; --tc:#ffdcbd; --on-tc:#2c1600; }
+  [data-mood="perfect"] { --primary:#006e2c; --pc:#a2f5ad; --on-pc:#002108; --tc:#c4ecff; --on-tc:#001e2b; }
+  [data-mood="jacket"]  { --primary:#006a63; --pc:#9df2e7; --on-pc:#00201d; --tc:#e8ddff; --on-tc:#1f1144; }
+  [data-mood="freeze"]  { --primary:#0b57d0; --pc:#d3e3fd; --on-pc:#041e49; --tc:#c2efff; --on-tc:#001f26; }
+  [data-mood="rain"]    { --primary:#4355b9; --pc:#dee0ff; --on-pc:#00105c; --tc:#c4f0dc; --on-tc:#00210f; }
+  [data-mood="storm"]   { --primary:#6b3fb8; --pc:#ebdcff; --on-pc:#250059; --tc:#ffd9e2; --on-tc:#3e0021; }
+  [data-mood="snow"]    { --primary:#00658f; --pc:#c7e7ff; --on-pc:#001e2e; --tc:#e3dfff; --on-tc:#1a1544; }
+
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body {
-    min-height: 100vh;
-    background:
-      radial-gradient(900px 500px at 110% -10%, rgba(233,185,73,0.16), transparent 60%),
-      radial-gradient(800px 600px at -20% 10%, rgba(124,92,255,0.20), transparent 60%),
-      radial-gradient(700px 500px at 50% 120%, rgba(124,92,255,0.10), transparent 60%),
-      var(--bg);
-    background-attachment: fixed;
-    color: var(--text);
-    font-family: var(--font);
+    min-height: 100vh; overflow-x: hidden;
+    background: var(--surface); color: var(--on-surface);
+    font-family: var(--font); font-size: 16px;
     -webkit-font-smoothing: antialiased;
+    transition: background-color .6s var(--ease);
   }
-  .wrap { max-width: 600px; margin: 0 auto; padding: 28px 18px 40px; }
-
-  /* Header */
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .logo { display: flex; align-items: center; gap: 9px; font-weight: 800; letter-spacing: 0.06em; font-size: 20px; }
-  .logo svg { width: 30px; height: 30px; }
-  .logo .cred { color: var(--gold); }
-  .pill {
-    display: inline-flex; align-items: center; gap: 7px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
-    padding: 6px 11px; border-radius: 999px;
-    border: 1px solid rgba(233,185,73,0.35); color: var(--gold-2);
-    background: rgba(233,185,73,0.08);
+  .material-symbols-rounded {
+    font-family: "Material Symbols Rounded"; font-weight: normal; font-style: normal;
+    font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none;
+    display: inline-block; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased;
+    font-variation-settings: "FILL" 1, "wght" 500, "GRAD" 0, "opsz" 24;
+    user-select: none;
   }
-  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 0 rgba(74,222,128,0.6); animation: pulse 1.8s infinite; }
-  @keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
-  h1 { font-size: clamp(26px, 7vw, 36px); line-height: 1.12; letter-spacing: -0.02em; margin: 26px 0 22px; font-weight: 800; }
-  h1 .accent { background: linear-gradient(90deg, var(--violet), #d0bfff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
-  /* Search */
-  .search { display: flex; gap: 10px; }
-  .search input {
-    flex: 1; min-width: 0; height: 50px; padding: 0 16px;
-    border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
-    color: var(--text); font: inherit; font-size: 16px; outline: none;
-    transition: border-color .15s, background .15s;
-  }
-  .search input::placeholder { color: #8a8a99; }
-  .search input:focus-visible { border-color: rgba(177,151,252,0.7); background: var(--surface-2); }
-  .btn-gold {
-    height: 50px; padding: 0 20px; border: 0; border-radius: 14px; cursor: pointer;
-    font: inherit; font-weight: 750; font-size: 15px; color: #1a1406;
-    background: linear-gradient(180deg, var(--gold-2), var(--gold));
-    box-shadow: 0 6px 20px -6px rgba(233,185,73,0.55);
-    transition: transform .08s, filter .15s, opacity .15s;
-  }
-  .btn-gold:hover { filter: brightness(1.05); }
-  .btn-gold:active { transform: translateY(1px); }
-  .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
-  :focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
-
-  /* Chips */
-  .label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--muted); margin: 22px 0 10px; text-transform: uppercase; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip {
-    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
-    padding: 8px 14px; border-radius: 999px;
-    border: 1px solid var(--border); background: var(--surface); color: #d9d9e2;
-    transition: background .15s, border-color .15s, color .15s;
-  }
-  .chip:hover { background: var(--surface-2); }
-  .chip[aria-pressed="true"] { background: rgba(233,185,73,0.14); border-color: rgba(233,185,73,0.6); color: var(--gold-2); }
-
-  /* Status */
-  .status { min-height: 24px; margin: 16px 0 4px; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .status.error { color: var(--red); }
-  .status .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--gold); animation: spin .8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .btn-ghost { font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); }
-  .btn-ghost:hover { background: rgba(255,255,255,0.11); }
-
-  /* Card */
-  .card {
-    margin-top: 10px; padding: 22px; border-radius: var(--radius);
-    background: linear-gradient(160deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
-    border: 1px solid var(--border);
-    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.7);
-    animation: rise .35s ease-out;
-  }
-  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .loc h2 { margin: 0; font-size: 24px; letter-spacing: -0.01em; }
-  .loc .region { color: var(--muted); margin-top: 3px; font-size: 15px; }
-  .loc .time { color: #8a8a99; margin-top: 6px; font-size: 13px; font-family: var(--mono); }
-  .now { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 16px; }
-  .temp { font-size: 68px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
-  .temp sup { font-size: 26px; font-weight: 700; vertical-align: top; position: relative; top: 8px; margin-left: 2px; color: var(--muted); }
-  .cond { font-size: 17px; font-weight: 600; margin-top: 8px; }
-  .feels { color: var(--muted); font-size: 14px; margin-top: 3px; }
-  .now img { width: 84px; height: 84px; flex: none; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.4)); }
-
-  .mood {
-    display: flex; gap: 14px; align-items: center;
-    padding: 14px 16px; border-radius: 14px;
-    background: linear-gradient(90deg, rgba(124,92,255,0.18), rgba(233,185,73,0.10));
-    border: 1px solid rgba(177,151,252,0.25);
-  }
-  .mood .emoji { font-size: 32px; line-height: 1; }
-  .mood .title { font-weight: 800; font-size: 16px; }
-  .mood .advice { color: #d6d6e0; font-size: 14px; margin-top: 2px; line-height: 1.4; }
-
-  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-  .tile { padding: 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
-  .tile .k { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; }
-  .tile .v { font-size: 20px; font-weight: 800; margin-top: 4px; }
-  .tile .v small { font-size: 13px; color: var(--muted); font-weight: 600; margin-left: 2px; }
-
-  /* JSON viewer */
-  .json { margin-top: 18px; border-radius: var(--radius); border: 1px solid var(--border); background: rgba(0,0,0,0.35); overflow: hidden; }
-  .json-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; border-bottom: 1px solid var(--border); }
-  .tabs { display: flex; gap: 4px; }
-  .tab { font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; padding: 7px 12px; border-radius: 10px; border: 0; background: transparent; color: var(--muted); }
-  .tab[aria-selected="true"] { background: var(--surface-2); color: var(--text); }
-  pre { margin: 0; padding: 14px 16px; max-height: 320px; overflow: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: #cfd3dc; white-space: pre; }
-  pre.raw { white-space: pre-wrap; word-break: break-all; }
-  .j-key { color: #b197fc; } .j-str { color: #9fe0a8; } .j-num { color: #f6d27a; } .j-bool { color: #7cc4ff; }
-
-  footer { margin-top: 30px; text-align: center; color: #8a8a99; font-size: 13px; }
-  footer a { color: var(--gold-2); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
   [hidden] { display: none !important; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+
+  /* ============ Funky background shapes ============ */
+  .blobs { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+  .blobs svg { position: absolute; transition: fill .6s var(--ease); }
+  .blob-a { width: 420px; top: -150px; right: -140px; fill: var(--pc); animation: spin 60s linear infinite; }
+  .blob-b { width: 300px; bottom: -110px; left: -120px; fill: var(--tc); animation: spin 45s linear infinite reverse; }
+  .blob-c { width: 110px; top: 42%; right: -40px; fill: var(--tc); opacity: .7; animation: spin 30s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  /* ============ Top app bar ============ */
+  .appbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark { position: relative; width: 44px; height: 44px; display: grid; place-items: center; }
+  .logo-mark svg { position: absolute; inset: 0; fill: var(--primary); transition: fill .6s var(--ease); animation: spin 24s linear infinite; }
+  .logo-mark .material-symbols-rounded { position: relative; color: var(--on-primary); font-size: 24px; }
+  .wordmark { font-size: 22px; font-weight: 900; letter-spacing: .01em; font-variation-settings: "wdth" 125; }
+  .wordmark b { color: var(--primary); font-weight: 1000; transition: color .6s var(--ease); }
+  .live {
+    display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px 0 12px;
+    border-radius: 8px; border: 1px solid var(--outline-var); background: var(--surface-1);
+    font-size: 12px; font-weight: 700; letter-spacing: .1em; color: var(--on-surface-var);
+  }
+  .live .dot { width: 8px; height: 8px; border-radius: 50%; background: #1e8e3e; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(30,142,62,.5); } 70% { box-shadow: 0 0 0 8px rgba(30,142,62,0); } 100% { box-shadow: 0 0 0 0 rgba(30,142,62,0); } }
+
+  h1 {
+    margin: 26px 0 22px; font-size: clamp(30px, 8.6vw, 50px); text-wrap: balance; line-height: 1.02; letter-spacing: -0.03em;
+    font-weight: 900; font-variation-settings: "wdth" 118, "opsz" 144;
+  }
+  h1 .hl {
+    display: inline-block; padding: 0 .22em .06em; margin: 0 -.04em; border-radius: 999px;
+    background: var(--tc); color: var(--on-tc); transform: rotate(-3deg);
+    transition: background-color .6s var(--ease), color .6s var(--ease);
+  }
+
+  /* ============ Search bar ============ */
+  .searchbar {
+    display: flex; align-items: center; gap: 4px; height: 64px; padding: 0 8px 0 18px;
+    border-radius: 999px; background: var(--surface-2);
+    box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.05);
+    transition: background-color .6s var(--ease), box-shadow .2s;
+  }
+  .searchbar:focus-within { box-shadow: 0 0 0 2px var(--primary), 0 4px 14px rgba(0,0,0,.08); }
+  .searchbar > .material-symbols-rounded { color: var(--on-surface-var); }
+  .searchbar input {
+    flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; outline: none;
+    padding: 0 8px; font: inherit; font-size: 17px; color: var(--on-surface);
+  }
+  .searchbar input::placeholder { color: var(--on-surface-var); }
+  .btn-filled {
+    display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 20px 0 22px;
+    border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--primary); color: var(--on-primary);
+    font: inherit; font-size: 15px; font-weight: 700; letter-spacing: .01em;
+    transition: border-radius .35s var(--spring), transform .2s var(--spring), background-color .6s var(--ease), opacity .2s;
+  }
+  .btn-filled .material-symbols-rounded { font-size: 20px; transition: transform .3s var(--spring); }
+  .btn-filled:hover { border-radius: 16px; }
+  .btn-filled:hover .material-symbols-rounded { transform: translateX(2px); }
+  .btn-filled:active { transform: scale(.95); }
+  .btn-filled:disabled { opacity: .45; cursor: not-allowed; border-radius: 999px; }
+
+  /* ============ Filter chips ============ */
+  .section-label { margin: 24px 4px 10px; font-size: 14px; font-weight: 700; color: var(--on-surface-var); letter-spacing: .02em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px;
+    border-radius: 10px; border: 1px solid var(--outline-var); background: transparent; cursor: pointer;
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--on-surface-var);
+    transition: background-color .2s, border-color .2s, color .2s, border-radius .35s var(--spring), padding .25s var(--ease);
+  }
+  .chip:hover { background: var(--surface-1); }
+  .chip .material-symbols-rounded { font-size: 18px; display: none; }
+  .chip[aria-pressed="true"] {
+    background: var(--pc); color: var(--on-pc); border-color: transparent; border-radius: 999px; padding: 0 16px 0 10px;
+  }
+  .chip[aria-pressed="true"] .material-symbols-rounded { display: inline-block; animation: pop .35s var(--spring); }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+  /* ============ Status ============ */
+  .status { margin: 18px 0 0; min-height: 8px; }
+  .loading { display: flex; flex-direction: column; gap: 10px; color: var(--on-surface-var); font-size: 14px; font-weight: 600; }
+  .wavy {
+    height: 10px; width: 100%; background: var(--primary);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10' viewBox='0 0 40 10'%3E%3Cpath d='M0 5 Q10 -1 20 5 T40 5' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x 0 0 / 40px 10px;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10' viewBox='0 0 40 10'%3E%3Cpath d='M0 5 Q10 -1 20 5 T40 5' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x 0 0 / 40px 10px;
+    animation: wave .9s linear infinite;
+  }
+  @keyframes wave { to { -webkit-mask-position: 40px 0; mask-position: 40px 0; } }
+  .banner {
+    display: flex; align-items: center; gap: 12px; padding: 14px 10px 14px 16px; border-radius: 20px;
+    background: var(--error-c); color: var(--on-error-c); font-size: 15px; font-weight: 600;
+    animation: rise .4s var(--spring);
+  }
+  .banner .material-symbols-rounded { color: var(--error); }
+  .banner .msg { flex: 1; }
+  .btn-text {
+    display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border: 0; border-radius: 999px;
+    background: transparent; color: var(--error); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .btn-text:hover { background: rgba(179,38,30,.08); }
+  .btn-text .material-symbols-rounded { font-size: 20px; color: inherit; }
+
+  /* ============ Weather hero card ============ */
+  @keyframes rise { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+  .hero {
+    position: relative; overflow: hidden; margin-top: 8px; padding: 22px 22px 24px;
+    border-radius: 36px; background: var(--pc); color: var(--on-pc);
+    animation: rise .5s var(--spring);
+    transition: background-color .6s var(--ease), color .6s var(--ease);
+  }
+  .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; position: relative; z-index: 1; }
+  .place { display: flex; gap: 6px; align-items: flex-start; }
+  .place .material-symbols-rounded { margin-top: 3px; }
+  .place h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.01em; font-variation-settings: "wdth" 112; line-height: 1.15; }
+  .place .region { font-size: 15px; opacity: .8; margin-top: 2px; }
+  .time-chip {
+    display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; flex: none;
+    background: rgba(255,255,255,.55); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .time-chip .material-symbols-rounded { font-size: 18px; }
+  .hero-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; position: relative; z-index: 1; }
+  .temp {
+    font-size: clamp(96px, 30vw, 136px); line-height: .9; font-weight: 900; letter-spacing: -0.06em;
+    font-variation-settings: "wdth" 151, "opsz" 144; margin-left: -4px;
+  }
+  .temp .deg { font-weight: 300; color: var(--primary); transition: color .6s var(--ease); }
+  .cond { font-size: 20px; font-weight: 800; margin-top: 10px; font-variation-settings: "wdth" 110; }
+  .feels-chip {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; height: 32px; padding: 0 12px 0 8px;
+    border-radius: 999px; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700;
+    transition: background-color .6s var(--ease);
+  }
+  .feels-chip .material-symbols-rounded { font-size: 18px; }
+  .sun { position: relative; width: 132px; height: 132px; flex: none; display: grid; place-items: center; }
+  .sun svg { position: absolute; inset: 0; fill: var(--tc); animation: spin 18s linear infinite; transition: fill .6s var(--ease); }
+  .sun img { position: relative; width: 96px; height: 96px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.18)); }
+
+  /* ============ Mood card ============ */
+  .mood {
+    display: flex; align-items: center; gap: 16px; margin-top: 14px; padding: 16px 20px 16px 16px;
+    border-radius: 28px; background: var(--tc); color: var(--on-tc);
+    transform: rotate(-1.2deg); animation: rise .55s var(--spring) both; animation-delay: .06s;
+    transition: transform .35s var(--spring), background-color .6s var(--ease), color .6s var(--ease);
+  }
+  .mood:hover { transform: rotate(0) scale(1.01); }
+  .flower { position: relative; width: 64px; height: 64px; flex: none; display: grid; place-items: center; }
+  .flower svg { position: absolute; inset: 0; fill: rgba(255,255,255,.7); animation: spin 12s linear infinite; }
+  .flower span { position: relative; font-size: 32px; line-height: 1; }
+  .mood .title { font-size: 22px; font-weight: 900; letter-spacing: -0.01em; font-variation-settings: "wdth" 120; }
+  .mood .advice { font-size: 15px; margin-top: 3px; line-height: 1.4; font-weight: 500; }
+
+  /* ============ Stat tiles (each a different shape) ============ */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    aspect-ratio: 1 / 1.05; padding: 10px; background: var(--surface-2); color: var(--on-surface);
+    animation: rise .6s var(--spring) both;
+    transition: border-radius .45s var(--spring), background-color .6s var(--ease), transform .3s var(--spring);
+  }
+  .tile:nth-child(1) { border-radius: 50%; animation-delay: .1s; }
+  .tile:nth-child(2) { border-radius: 32px 32px 32px 8px; animation-delay: .14s; }
+  .tile:nth-child(3) { border-radius: 999px 999px 24px 24px; animation-delay: .18s; }
+  .tile:hover { border-radius: 24px; transform: translateY(-2px); }
+  .tile .material-symbols-rounded { color: var(--primary); font-size: 26px; transition: color .6s var(--ease); }
+  .tile .v { font-size: 26px; font-weight: 900; margin-top: 4px; font-variation-settings: "wdth" 120; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .tile .v small { font-size: 13px; font-weight: 700; color: var(--on-surface-var); margin-left: 1px; }
+  .tile .k { font-size: 12px; font-weight: 700; color: var(--on-surface-var); margin-top: 2px; letter-spacing: .03em; }
+
+  /* ============ JSON viewer ============ */
+  .json {
+    margin-top: 18px; border-radius: 28px; background: var(--surface-1); border: 1px solid var(--outline-var); overflow: hidden;
+    animation: rise .6s var(--spring) both; animation-delay: .22s; transition: background-color .6s var(--ease);
+  }
+  .json-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 14px 12px 18px; flex-wrap: wrap; }
+  .json-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; }
+  .json-title .material-symbols-rounded { color: var(--primary); }
+  .json-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 14px 12px; flex-wrap: wrap; }
+  .segmented { display: inline-flex; border: 1px solid var(--outline); border-radius: 999px; overflow: hidden; height: 40px; }
+  .seg {
+    display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; border: 0; background: transparent; cursor: pointer;
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--on-surface);
+    transition: background-color .2s;
+  }
+  .seg + .seg { border-left: 1px solid var(--outline); }
+  .seg .material-symbols-rounded { font-size: 18px; display: none; }
+  .seg[aria-selected="true"] { background: var(--pc); color: var(--on-pc); }
+  .seg[aria-selected="true"] .material-symbols-rounded { display: inline-block; animation: pop .3s var(--spring); }
+  .btn-tonal {
+    display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 18px 0 14px; border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--tc); color: var(--on-tc); font: inherit; font-size: 14px; font-weight: 700;
+    transition: border-radius .35s var(--spring), background-color .6s var(--ease), transform .2s var(--spring);
+  }
+  .btn-tonal:hover { border-radius: 12px; }
+  .btn-tonal:active { transform: scale(.95); }
+  .btn-tonal .material-symbols-rounded { font-size: 18px; }
+  pre {
+    margin: 0 10px 10px; padding: 14px 16px; max-height: 320px; overflow: auto; border-radius: 20px;
+    background: #1d1b20; color: #e6e0e9; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; white-space: pre;
+  }
+  pre.raw { white-space: pre-wrap; word-break: break-all; }
+  .j-key { color: #d0bcff; } .j-str { color: #a8e6b0; } .j-num { color: #ffb68a; } .j-bool { color: #9ecaff; }
+
+  /* ============ Snackbar ============ */
+  .snackbar {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 140%); z-index: 10;
+    display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 12px 18px; border-radius: 12px;
+    background: var(--inverse); color: var(--on-inverse); font-size: 14px; font-weight: 600;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25); visibility: hidden; transition: transform .4s var(--spring), visibility 0s .4s;
+  }
+  .snackbar .material-symbols-rounded { font-size: 20px; color: #a8e6b0; }
+  .snackbar.show { transform: translate(-50%, 0); visibility: visible; transition: transform .4s var(--spring), visibility 0s; }
+
+  footer { margin-top: 32px; text-align: center; font-size: 13px; color: var(--on-surface-var); line-height: 1.6; }
+  footer a { color: var(--primary); font-weight: 700; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
 
   @media (max-width: 400px) {
-    .wrap { padding: 20px 14px 32px; }
-    .btn-gold { padding: 0 16px; }
-    .temp { font-size: 58px; }
-    .now img { width: 70px; height: 70px; }
-    .tile .v { font-size: 18px; }
+    .wrap { padding: 16px 12px 32px; }
+    .btn-filled { padding: 0 16px; }
+    .sun { width: 108px; height: 108px; } .sun img { width: 80px; height: 80px; }
+    .tile .v { font-size: 22px; }
+    .hero { padding: 20px 18px 22px; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
+<div class="blobs" aria-hidden="true">
+  <svg class="blob-a" viewBox="0 0 100 100"><path data-shape="cookie" data-n="6" data-amp="0.16" /></svg>
+  <svg class="blob-b" viewBox="0 0 100 100"><path data-shape="cookie" data-n="4" data-amp="0.14" /></svg>
+  <svg class="blob-c" viewBox="0 0 100 100"><path data-shape="cookie" data-n="9" data-amp="0.12" /></svg>
+</div>
+
 <div class="wrap">
   <header>
-    <div class="top">
+    <div class="appbar">
       <div class="logo" aria-label="SKYCRED">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6d27a"/><stop offset="1" stop-color="#e9b949"/></linearGradient></defs>
-          <path fill="url(#g)" d="M46 50H20a12 12 0 1 1 2.6-23.7A15 15 0 0 1 51 30.4 10 10 0 0 1 46 50z"/>
-        </svg>
-        <span>SKY<span class="cred">CRED</span></span>
+        <span class="logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><path data-shape="cookie" data-n="9" data-amp="0.12" /></svg>
+          <span class="material-symbols-rounded">cloud</span>
+        </span>
+        <span class="wordmark">SKY<b>CRED</b></span>
       </div>
-      <span class="pill"><span class="dot" aria-hidden="true"></span>LIVE WEATHER</span>
+      <span class="live"><span class="dot" aria-hidden="true"></span>LIVE WEATHER</span>
     </div>
-    <h1>Check the sky's <span class="accent">credit score</span> before you step out.</h1>
+    <h1>Check the sky's <span class="hl">credit score</span> before you step out.</h1>
   </header>
 
   <main>
-    <form class="search" id="searchForm" role="search" autocomplete="off">
+    <form class="searchbar" id="searchForm" role="search" autocomplete="off">
+      <span class="material-symbols-rounded" aria-hidden="true">search</span>
       <label for="city" class="sr-only">City name</label>
       <input id="city" name="city" type="text" placeholder="Enter a city name…" maxlength="100" enterkeyhint="search" />
-      <button class="btn-gold" id="searchBtn" type="submit">Search</button>
+      <button class="btn-filled" id="searchBtn" type="submit">Search<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>
     </form>
 
-    <div class="label" id="chipsLabel">Popular cities</div>
+    <div class="section-label" id="chipsLabel">Popular cities</div>
     <div class="chips" id="chips" role="group" aria-labelledby="chipsLabel"></div>
 
     <div class="status" id="status" role="status" aria-live="polite"></div>
 
     <section id="result" hidden aria-live="polite">
-      <article class="card" id="card">
-        <div class="loc">
-          <h2 id="cityName"></h2>
-          <div class="region" id="region"></div>
-          <div class="time" id="localTime"></div>
+      <article class="hero">
+        <div class="hero-top">
+          <div class="place">
+            <span class="material-symbols-rounded" aria-hidden="true">location_on</span>
+            <div>
+              <h2 id="cityName"></h2>
+              <div class="region" id="region"></div>
+            </div>
+          </div>
+          <span class="time-chip"><span class="material-symbols-rounded" aria-hidden="true">schedule</span><span id="localTime"></span></span>
         </div>
-        <div class="now">
+        <div class="hero-main">
           <div>
-            <div class="temp"><span id="temp"></span><sup>°C</sup></div>
+            <div class="temp"><span id="temp"></span><span class="deg">°</span><span class="sr-only">C</span></div>
             <div class="cond" id="condition"></div>
-            <div class="feels" id="feels"></div>
+            <div class="feels-chip"><span class="material-symbols-rounded" aria-hidden="true">thermostat</span><span id="feels"></span></div>
           </div>
-          <img id="icon" alt="" width="84" height="84" onerror="this.hidden=true" />
-        </div>
-        <div class="mood" id="mood">
-          <div class="emoji" id="moodEmoji" aria-hidden="true"></div>
-          <div>
-            <div class="title" id="moodTitle"></div>
-            <div class="advice" id="moodAdvice"></div>
+          <div class="sun">
+            <svg viewBox="0 0 100 100" aria-hidden="true"><path data-shape="cookie" data-n="12" data-amp="0.09" /></svg>
+            <img id="icon" alt="" width="96" height="96" onerror="this.hidden=true" />
           </div>
-        </div>
-        <div class="tiles">
-          <div class="tile"><div class="k">Humidity</div><div class="v"><span id="humidity"></span><small>%</small></div></div>
-          <div class="tile"><div class="k">Wind</div><div class="v"><span id="wind"></span><small>kph</small></div></div>
-          <div class="tile"><div class="k">UV index</div><div class="v" id="uv"></div></div>
         </div>
       </article>
 
-      <div class="json" id="json">
+      <div class="mood">
+        <div class="flower" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><path data-shape="cookie" data-n="8" data-amp="0.22" /></svg>
+          <span id="moodEmoji"></span>
+        </div>
+        <div>
+          <div class="title" id="moodTitle"></div>
+          <div class="advice" id="moodAdvice"></div>
+        </div>
+      </div>
+
+      <div class="tiles">
+        <div class="tile"><span class="material-symbols-rounded" aria-hidden="true">water_drop</span><div class="v"><span id="humidity"></span><small>%</small></div><div class="k">Humidity</div></div>
+        <div class="tile"><span class="material-symbols-rounded" aria-hidden="true">air</span><div class="v"><span id="wind"></span><small>kph</small></div><div class="k">Wind</div></div>
+        <div class="tile"><span class="material-symbols-rounded" aria-hidden="true">wb_sunny</span><div class="v" id="uv"></div><div class="k">UV index</div></div>
+      </div>
+
+      <div class="json">
+        <div class="json-head">
+          <div class="json-title"><span class="material-symbols-rounded" aria-hidden="true">data_object</span>API response</div>
+        </div>
         <div class="json-bar">
-          <div class="tabs" role="tablist" aria-label="JSON view">
-            <button class="tab" role="tab" id="tabFmt" aria-selected="true" aria-controls="jsonOut">Formatted JSON</button>
-            <button class="tab" role="tab" id="tabRaw" aria-selected="false" aria-controls="jsonOut" tabindex="-1">Raw JSON</button>
+          <div class="segmented" role="tablist" aria-label="JSON view">
+            <button class="seg" role="tab" id="tabFmt" aria-selected="true" aria-controls="jsonOut"><span class="material-symbols-rounded" aria-hidden="true">check</span>Formatted JSON</button>
+            <button class="seg" role="tab" id="tabRaw" aria-selected="false" aria-controls="jsonOut" tabindex="-1"><span class="material-symbols-rounded" aria-hidden="true">check</span>Raw JSON</button>
           </div>
-          <button class="btn-ghost" id="copyBtn" type="button">Copy</button>
+          <button class="btn-tonal" id="copyBtn" type="button"><span class="material-symbols-rounded" aria-hidden="true" id="copyIcon">content_copy</span><span id="copyLabel">Copy</span></button>
         </div>
         <pre id="jsonOut" role="tabpanel" tabindex="0" aria-labelledby="tabFmt"></pre>
       </div>
@@ -233,6 +386,8 @@
     Powered by <a href="https://www.weatherapi.com/" title="Free Weather API" target="_blank" rel="noopener">WeatherAPI.com</a> · Not a real credit score, just vibes.
   </footer>
 </div>
+
+<div class="snackbar" id="snackbar" role="status" aria-live="polite"><span class="material-symbols-rounded" aria-hidden="true">check</span>JSON copied to clipboard</div>
 
 <!-- Vercel Web Analytics (enable it in the Vercel dashboard; harmless 404 elsewhere) -->
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
@@ -255,13 +410,27 @@
   let lastQuery = DEFAULT_CITY;
 
   const track = (name, data) => { try { window.va('event', { name, data }); } catch (_) {} };
+  const icon = (name) => { const s = document.createElement('span'); s.className = 'material-symbols-rounded'; s.setAttribute('aria-hidden', 'true'); s.textContent = name; return s; };
+
+  // ---------- Material 3 Expressive "cookie" shapes ----------
+  function cookiePath(n, amp) {
+    const pts = [];
+    for (let i = 0; i < 360; i += 2) {
+      const t = (i * Math.PI) / 180;
+      const r = 50 - amp * 50 * (1 - Math.cos(n * t)) / 2;
+      pts.push(`${(50 + r * Math.cos(t)).toFixed(2)},${(50 + r * Math.sin(t)).toFixed(2)}`);
+    }
+    return `M${pts.join('L')}Z`;
+  }
+  document.querySelectorAll('[data-shape="cookie"]').forEach((p) => p.setAttribute('d', cookiePath(+p.dataset.n, +p.dataset.amp)));
 
   // ---------- Chips ----------
   CITIES.forEach((c) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'chip';
-    b.textContent = c;
+    b.append(icon('check'), document.createTextNode(c));
+    b.dataset.city = c;
     b.setAttribute('aria-pressed', 'false');
     b.addEventListener('click', () => {
       input.value = c;
@@ -273,9 +442,7 @@
 
   function highlightChip(q) {
     const k = q.trim().toLowerCase();
-    chipsEl.querySelectorAll('.chip').forEach((b) => {
-      b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === k));
-    });
+    chipsEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.city.toLowerCase() === k)));
   }
 
   // ---------- Mood logic (condition first, then feels-like) ----------
@@ -284,33 +451,39 @@
     const has = (...words) => words.some((w) => text.includes(w));
     const feels = Math.round(cur.feelslike_c);
     let m;
-    if (has('thunder'))                         m = { emoji: '⛈️', title: 'Storm Alert',  advice: 'Stay in if you can; skip the open spaces.' };
-    else if (has('rain', 'drizzle', 'shower'))  m = { emoji: '☔', title: 'Umbrella Day', advice: 'Carry an umbrella and waterproof shoes.' };
-    else if (has('snow', 'sleet', 'ice'))       m = { emoji: '❄️', title: 'Snow Day',     advice: 'Boots, gloves, and watch your step.' };
-    else if (has('haze', 'smoke', 'mist', 'fog')) m = { emoji: '🌫️', title: 'Hazy Skies', advice: 'Low visibility; consider a mask outdoors.' };
-    else if (feels >= 38)                       m = { emoji: '🔥', title: 'Heat Wave',     advice: 'Avoid midday sun, carry water.' };
-    else if (feels >= 28)                       m = { emoji: '😎', title: 'Warm & Sunny',  advice: 'Pleasant warmth, light layers work.' };
-    else if (feels >= 18)                       m = { emoji: '💯', title: 'Perfect Score', advice: 'Ideal weather; go enjoy it.' };
-    else if (feels >= 8)                        m = { emoji: '🧥', title: 'Light Jacket',  advice: 'Cool out there; grab a layer.' };
-    else                                        m = { emoji: '🥶', title: 'Freeze Frame',  advice: 'Bone-chilling cold — bundle up tight.' };
+    if (has('thunder'))                           m = { key: 'storm',   emoji: '⛈️', title: 'Storm Alert',   advice: 'Stay in if you can; skip the open spaces.' };
+    else if (has('rain', 'drizzle', 'shower'))    m = { key: 'rain',    emoji: '☔', title: 'Umbrella Day',  advice: 'Carry an umbrella and waterproof shoes.' };
+    else if (has('snow', 'sleet', 'ice'))         m = { key: 'snow',    emoji: '❄️', title: 'Snow Day',      advice: 'Boots, gloves, and watch your step.' };
+    else if (has('haze', 'smoke', 'mist', 'fog')) m = { key: 'hazy',    emoji: '🌫️', title: 'Hazy Skies',    advice: 'Low visibility; consider a mask outdoors.' };
+    else if (feels >= 38)                         m = { key: 'heat',    emoji: '🔥', title: 'Heat Wave',     advice: 'Avoid midday sun, carry water.' };
+    else if (feels >= 28)                         m = { key: 'sunny',   emoji: '😎', title: 'Warm & Sunny',  advice: 'Pleasant warmth, light layers work.' };
+    else if (feels >= 18)                         m = { key: 'perfect', emoji: '💯', title: 'Perfect Score', advice: 'Ideal weather; go enjoy it.' };
+    else if (feels >= 8)                          m = { key: 'jacket',  emoji: '🧥', title: 'Light Jacket',  advice: 'Cool out there; grab a layer.' };
+    else                                          m = { key: 'freeze',  emoji: '🥶', title: 'Freeze Frame',  advice: 'Bone-chilling cold — bundle up tight.' };
     if (cur.uv >= 6 && cur.is_day === 1) m = { ...m, advice: `${m.advice} High UV, wear sunscreen.` };
     return m;
   }
 
   // ---------- Status ----------
   function setStatus(kind, text) {
-    statusEl.className = 'status' + (kind === 'error' || kind === 'neterror' ? ' error' : '');
     statusEl.replaceChildren();
     if (kind === 'loading') {
-      const s = document.createElement('span'); s.className = 'spinner'; s.setAttribute('aria-hidden', 'true');
-      statusEl.append(s);
-    }
-    if (text) statusEl.append(document.createTextNode(text));
-    if (kind === 'neterror') {
-      const r = document.createElement('button');
-      r.type = 'button'; r.className = 'btn-ghost'; r.textContent = 'Retry';
-      r.addEventListener('click', () => search(lastQuery));
-      statusEl.append(r);
+      const box = document.createElement('div'); box.className = 'loading';
+      const w = document.createElement('div'); w.className = 'wavy'; w.setAttribute('aria-hidden', 'true');
+      box.append(w, document.createTextNode(text));
+      statusEl.append(box);
+    } else if (kind === 'error' || kind === 'neterror') {
+      const b = document.createElement('div'); b.className = 'banner';
+      const msg = document.createElement('span'); msg.className = 'msg'; msg.textContent = text;
+      b.append(icon('error'), msg);
+      if (kind === 'neterror') {
+        const r = document.createElement('button');
+        r.type = 'button'; r.className = 'btn-text';
+        r.append(icon('refresh'), document.createTextNode('Retry'));
+        r.addEventListener('click', () => search(lastQuery));
+        b.append(r);
+      }
+      statusEl.append(b);
     }
   }
 
@@ -338,6 +511,7 @@
       if (res.status === 404 || body?.error?.code === 1006) {
         result.hidden = true;
         lastData = null;
+        document.documentElement.dataset.mood = 'default';
         setStatus('error', 'No matching location found.');
         track('not_found', { q });
         return;
@@ -349,6 +523,7 @@
     } catch (err) {
       if (ctrl !== inflight) return; // aborted by a newer request
       result.hidden = true;
+      document.documentElement.dataset.mood = 'default';
       setStatus('neterror', "Couldn't reach the weather service. Try again.");
       track('error', { q, message: String(err?.message || err) });
     } finally {
@@ -363,20 +538,23 @@
     lastData = d;
     $('cityName').textContent = loc.name;
     $('region').textContent = [loc.region, loc.country].filter(Boolean).join(', ');
-    $('localTime').textContent = `Local time: ${loc.localtime}`;
+    $('localTime').textContent = loc.localtime;
+    $('localTime').parentElement.setAttribute('aria-label', `Local time: ${loc.localtime}`);
     $('temp').textContent = Math.round(cur.temp_c);
     $('condition').textContent = cur.condition?.text || '';
     $('feels').textContent = `Feels like ${Math.round(cur.feelslike_c)}°C`;
 
-    const icon = $('icon');
+    const img = $('icon');
     const src = cur.condition?.icon || '';
     if (src) {
-      icon.src = (src.startsWith('//') ? 'https:' : '') + src.replace('/64x64/', '/128x128/');
-      icon.alt = cur.condition.text || '';
-      icon.hidden = false;
-    } else icon.hidden = true;
+      img.src = (src.startsWith('//') ? 'https:' : '') + src.replace('/64x64/', '/128x128/');
+      img.alt = cur.condition.text || '';
+      img.hidden = false;
+    } else img.hidden = true;
 
     const m = getMood(cur);
+    document.documentElement.dataset.mood = m.key;
+    $('themeColor').setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--pc').trim());
     $('moodEmoji').textContent = m.emoji;
     $('moodTitle').textContent = m.title;
     $('moodAdvice').textContent = m.advice;
@@ -386,7 +564,8 @@
     $('uv').textContent = cur.uv;
 
     renderJson();
-    result.hidden = false;
+    // Restart entrance animations on every new result
+    result.hidden = true; void result.offsetWidth; result.hidden = false;
   }
 
   function escapeHtml(s) { return s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
@@ -443,10 +622,16 @@
       try { document.execCommand('copy'); } catch (_) {}
       ta.remove();
     }
-    copyBtn.textContent = 'Copied';
+    $('copyLabel').textContent = 'Copied';
+    $('copyIcon').textContent = 'check';
+    $('snackbar').classList.add('show');
     track('copy_json', { mode: jsonMode });
     clearTimeout(copyTimer);
-    copyTimer = setTimeout(() => (copyBtn.textContent = 'Copy'), 2000);
+    copyTimer = setTimeout(() => {
+      $('copyLabel').textContent = 'Copy';
+      $('copyIcon').textContent = 'content_copy';
+      $('snackbar').classList.remove('show');
+    }, 2000);
   });
 
   form.addEventListener('submit', (e) => { e.preventDefault(); search(input.value); });
