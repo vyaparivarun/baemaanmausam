@@ -40,5 +40,5 @@ http.createServer(async (req, res) => {
   }
   res.statusCode = 404; res.end('Not found');
 }).listen(PORT, () => {
-  console.log(`SKYCRED on http://localhost:${PORT}  (${useMock ? 'MOCK data' : 'live WeatherAPI'})`);
+  console.log(`BaeMaan Mausam on http://localhost:${PORT}  (${useMock ? 'MOCK data' : 'live WeatherAPI'})`);
 });

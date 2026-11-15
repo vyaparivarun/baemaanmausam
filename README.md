@@ -1,6 +1,6 @@
-# SKYCRED
+# BaeMaan Mausam
 
-Check the sky's credit score before you step out. A one-screen live weather app built to the SKYCRED PRD (Nov 15, 2026).
+Check the sky's credit score before you step out. A one-screen live weather app built to the SKYCRED PRD, renamed BaeMaan Mausam. Live at https://baemaan-mausam.vercel.app (Nov 15, 2026).
 
 ## Structure
 

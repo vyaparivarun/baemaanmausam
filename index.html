@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SKYCRED · Check the sky's credit score</title>
+<title>BaeMaan Mausam · Check the sky's credit score</title>
 <meta name="description" content="Is it okay to step out right now? Live weather with a verdict, in under 5 seconds." />
 <meta name="theme-color" content="#eaddff" id="themeColor" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='%236750a4'/><path fill='%23fff' d='M44 44H22a9 9 0 1 1 2-17.8A11 11 0 0 1 45 29a7.5 7.5 0 0 1-1 15z'/></svg>" />
@@ -77,7 +77,7 @@
   .logo-mark { position: relative; width: 44px; height: 44px; display: grid; place-items: center; }
   .logo-mark svg { position: absolute; inset: 0; fill: var(--primary); transition: fill .6s var(--ease); animation: spin 24s linear infinite; }
   .logo-mark .material-symbols-rounded { position: relative; color: var(--on-primary); font-size: 24px; }
-  .wordmark { font-size: 22px; font-weight: 900; letter-spacing: .01em; font-variation-settings: "wdth" 125; }
+  .wordmark { white-space: nowrap; font-size: 22px; font-weight: 900; letter-spacing: .01em; font-variation-settings: "wdth" 125; }
   .wordmark b { color: var(--primary); font-weight: 1000; transition: color .6s var(--ease); }
   .live {
     display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px 0 12px;
@@ -279,6 +279,7 @@
   footer a { color: var(--primary); font-weight: 700; text-decoration: none; }
   footer a:hover { text-decoration: underline; }
 
+  @media (max-width: 440px) { .live-long { display: none; } .wordmark { font-size: 20px; } }
   @media (max-width: 400px) {
     .wrap { padding: 16px 12px 32px; }
     .btn-filled { padding: 0 16px; }
@@ -299,14 +300,14 @@
 <div class="wrap">
   <header>
     <div class="appbar">
-      <div class="logo" aria-label="SKYCRED">
+      <div class="logo" aria-label="BaeMaan Mausam">
         <span class="logo-mark" aria-hidden="true">
           <svg viewBox="0 0 100 100"><path data-shape="cookie" data-n="9" data-amp="0.12" /></svg>
           <span class="material-symbols-rounded">cloud</span>
         </span>
-        <span class="wordmark">SKY<b>CRED</b></span>
+        <span class="wordmark">BaeMaan <b>Mausam</b></span>
       </div>
-      <span class="live"><span class="dot" aria-hidden="true"></span>LIVE WEATHER</span>
+      <span class="live"><span class="dot" aria-hidden="true"></span>LIVE<span class="live-long">&nbsp;WEATHER</span></span>
     </div>
     <h1>Check the sky's <span class="hl">credit score</span> before you step out.</h1>
   </header>
